@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Futsal Racing Club — Programación Semanal</title>
+<meta name="theme-color" content="#002244">
+<meta name="description" content="Gestión de la programación semanal de partidos de futsal de Racing Club">
+<link rel="manifest" id="manifestLink" href="">
+<link rel="icon" id="faviconLink" href="">
+<link rel="apple-touch-icon" id="appleIconLink" href="">
+<style>
+  :root{
+    --celeste:#0098DA;
+    --celeste-dark:#0079ad;
+    --marino:#002244;
+    --marino-light:#0a3560;
+    --blanco:#FFFFFF;
+    --gris:#F4F6F8;
+    --gris-borde:#dfe4ea;
+    --gris_oscuro:#757d87;
+    --rojo:#d64545;
+    --verde-wa:#25D366;
+    --radius:14px;
+    --shadow: 0 2px 10px rgba(0,34,68,.08);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:var(--gris);
+    color:var(--marino);
+    line-height:1.4;
+    padding-bottom:2rem;
+  }
+  header.app-header{
+    background: linear-gradient(135deg, var(--marino) 0%, var(--marino-light) 60%, var(--celeste) 140%);
+    color:var(--blanco);
+    padding:1.4rem 1.2rem 1.6rem;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+    flex-wrap:wrap;
+    box-shadow: var(--shadow);
+  }
+  .brand{display:flex;align-items:center;gap:.7rem;}
+  .brand svg{flex:none;color:var(--celeste);filter:drop-shadow(0 0 2px rgba(0,0,0,.3));}
+  .brand h1{font-size:1.15rem;margin:0;font-weight:700;letter-spacing:.3px;}
+  .brand p{margin:.15rem 0 0;font-size:.78rem;opacity:.85;font-weight:400;}
+  main{max-width:1100px;margin:0 auto;padding:1.2rem;}
+  .card{
+    background:var(--blanco);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:1.1rem 1.2rem 1.3rem;
+    margin-bottom:1.2rem;
+  }
+  .card h2{
+    font-size:1rem;
+    margin:0 0 .8rem;
+    color:var(--marino);
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+  }
+  .card h2 svg{color:var(--celeste);flex:none;}
+  .field-group{display:flex;flex-direction:column;gap:.6rem;}
+  input[type="text"], input[type="url"], input[type="date"], input[type="time"]{
+    width:100%;
+    padding:.6rem .75rem;
+    border:1.5px solid var(--gris-borde);
+    border-radius:10px;
+    font-size:.92rem;
+    color:var(--marino);
+    background:var(--gris);
+    transition:border-color .15s, box-shadow .15s;
+    font-family:inherit;
+  }
+  input:focus{
+    outline:none;
+    border-color:var(--celeste);
+    box-shadow:0 0 0 3px rgba(0,152,218,.18);
+    background:var(--blanco);
+  }
+  .checkbox-row{
+    display:flex;align-items:center;gap:.5rem;
+    font-size:.88rem;font-weight:600;color:var(--marino);
+    cursor:pointer;
+    margin-top:.7rem;
+  }
+  .checkbox-row input{width:17px;height:17px;accent-color:var(--celeste);cursor:pointer;}
+  small.hint{display:block;color:#6b7d90;font-size:.74rem;margin-top:.25rem;font-weight:400;}
+
+  /* Segmented toggle (localía) */
+  .segmented{display:inline-flex;border:2px solid var(--celeste);border-radius:999px;overflow:hidden;flex-wrap:wrap;}
+  .segmented input{position:absolute;opacity:0;width:0;height:0;}
+  .segmented label{
+    padding:.65rem 1.3rem;
+    cursor:pointer;
+    font-weight:700;
+    font-size:.85rem;
+    color:var(--marino);
+    background:var(--blanco);
+    transition:.18s;
+    user-select:none;
+  }
+  .segmented input:checked + label{background:var(--celeste);color:var(--blanco);}
+  .segmented input:disabled + label{opacity:.4;cursor:not-allowed;}
+
+  /* Duplas grid */
+  .duplas-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1.2rem;
+    margin-bottom:1.2rem;
+  }
+  .dupla-card{
+    background:var(--blanco);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:1.1rem 1.2rem 1.3rem;
+    position:relative;
+  }
+  
+   .dupla-card{border-top:5px solid var(--celeste);}
+   .dupla-card.visitante{border-top:5px solid var(--gris_oscuro);}
+
+  .dupla-card.omitted{opacity:.55;}
+  .dupla-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:.6rem;
+    margin-bottom:.2rem;
+  }
+  .dupla-header h3{
+    margin:0;
+    font-size:1.02rem;
+    color:var(--marino);
+  }
+  .cat-badge{
+    display:inline-block;
+    /* background:rgba(0,152,218,.12); */
+    color:var(--marino);
+    padding:.15rem .5rem;
+    border-radius:6px;
+    font-weight:700;
+  }
+  .sep{opacity:.6;font-weight:400;padding:0 .15rem;}
+  .role-badge{
+    flex:none;
+    font-size:.72rem;
+    font-weight:800;
+    letter-spacing:.4px;
+    padding:.45rem .6rem;
+    border-radius:999px;
+    color:#fff;
+    background:var(--celeste);
+    white-space:nowrap;
+  }
+  .role-badge.visitante{background:var(--gris_oscuro);}
+  .btn-invert{
+    display:inline-flex;
+    align-items:center;
+    gap:.4rem;
+    background:var(--gris);
+    border:1.5px solid var(--gris-borde);
+    color:var(--marino);
+    padding:.45rem .8rem;
+    border-radius:999px;
+    font-size:.78rem;
+    font-weight:700;
+    cursor:pointer;
+    /* margin:.6rem 0 .3rem; */
+    transition:.15s;
+  }
+  .btn-invert:hover{border-color:var(--celeste);color:var(--celeste-dark);}
+  .btn-invert svg{flex:none;}
+
+  .dupla-fields{margin-top:.4rem;}
+  .dupla-fields.hidden{display:none;}
+  .mini-rival-block{
+    display:flex;flex-direction:column;gap:.5rem;
+    background:var(--gris);
+    border:1px dashed var(--gris-borde);
+    border-radius:10px;
+    padding:.7rem;
+    margin:.6rem 0;
+  }
+  .mini-rival-block.hidden{display:none;}
+  .field-label{
+    font-size:.8rem;
+    font-weight:700;
+    color:#4d6072;
+    margin:.7rem 0 .3rem;
+    display:block;
+  }
+  .time-row{
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+    margin-top:.35rem;
+    flex-wrap:wrap;
+  }
+  .time-row label.time-name{
+    font-size:.85rem;
+    font-weight:700;
+    min-width:88px;
+    color:var(--marino);
+  }
+  .time-row input[type="time"]{width:auto;min-width:110px;}
+  .time-badge{
+    display:inline-block;
+    background:var(--gris_oscuro);
+    color:#fff;
+    font-weight:700;
+    font-size:.85rem;
+    padding:.45rem .7rem;
+    border-radius:10px;
+    letter-spacing:.3px;
+  }
+  .warn-msg{
+    display:flex;align-items:center;gap:.35rem;
+    color:var(--rojo);
+    font-size:.76rem;
+    font-weight:700;
+    margin-top:.35rem;
+  }
+  .warn-msg.hidden{display:none;}
+  input.input-warning{border-color:var(--rojo)!important;box-shadow:0 0 0 3px rgba(214,69,69,.15);}
+
+  /* Previews */
+  .previews-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    /* gap:1.2rem; */
+  }
+  .preview-card h2{color:var(--marino);}
+  .preview-box{
+    background:var(--gris);
+    border:1.5px solid var(--gris-borde);
+    border-radius:10px;
+    padding:.9rem 1rem;
+    font-family:"Consolas","Menlo",monospace;
+    font-size:.82rem;
+    white-space:pre-wrap;
+    word-break:break-word;
+    color:var(--marino);
+    min-height:180px;
+    margin-bottom:.9rem;
+  }
+  #waPreview{border-left:4px solid var(--verde-wa);}
+  #mailPreview{border-left:4px solid var(--celeste);}
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.5rem;
+    border:none;
+    border-radius:10px;
+    padding:.75rem 1.1rem;
+    font-size:.92rem;
+    font-weight:700;
+    cursor:pointer;
+    width:100%;
+    transition:.15s transform, .15s filter;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn-primary{background:var(--marino);color:#fff;}
+  .btn-primary:hover{filter:brightness(1.15);}
+  #sendWaBtn{background:var(--verde-wa);}
+  #sendWaBtn:hover{filter:brightness(1.08);}
+  .btn-install{
+    background:var(--celeste);
+    color:#fff;
+    width:auto;
+    padding:.6rem .95rem;
+    font-size:.82rem;
+  }
+  .btn-install.hidden{display:none;}
+
+  footer.app-footer{
+    text-align:center;
+    color:#7b8c9d;
+    font-size:.75rem;
+    padding:1.5rem 1rem .5rem;
+  }
+
+  @media (max-width:760px){
+    .duplas-grid, .previews-grid{grid-template-columns:1fr;}
+    .brand h1{font-size:1rem;}
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+      <circle cx="12" cy="12" r="9.2"/>
+      <path d="M12 6.3l3.1 2.25-1.18 3.65H10.1L8.9 8.55 12 6.3z" fill="currentColor" stroke="none"/>
+      <path d="M12 3v3.1M12 21v-3.1M3 12h3.1M21 12h-3.1M5.6 5.6l2.05 2.05M18.4 5.6l-2.05 2.05M5.6 18.4l2.05-2.05M18.4 18.4l-2.05-2.05" stroke-width="1"/>
+    </svg>
+    <div>
+      <h1>Programación Semanal de Futsal</h1>
+      <p>Racing Club · Fútbol Masculino</p>
+    </div>
+  </div>
+  <button id="installBtn" class="btn btn-install" type="button">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+    Instalar App
+  </button>
+</header>
+
+<main>
+
+  <!-- RIVAL -->
+  <section class="card">
+    <h2>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 6l3 2.2-1.1 3.6h-3.8L9 8.2 12 6z" fill="currentColor" stroke="none"/></svg>
+      Equipo Rival
+    </h2>
+    <div class="field-group" id="generalRivalBlock">
+      <input type="text" id="rivalGeneral" placeholder="Equipo Rival" autocomplete="off">
+      <input type="text" id="rivalAddress" placeholder="Dirección del rival" autocomplete="off">
+      <input type="url" id="rivalMapsLink" placeholder="Link de Google Maps (opcional)" autocomplete="off">
+    </div>
+    <label class="checkbox-row">
+      <input type="checkbox" id="reprogramado">
+      Partido Reprogramado (habilita rivales independientes por dupla)
+    </label>
+  </section>
+
+  <!-- LOCALIA -->
+  <section class="card">
+    <h2>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></svg>
+      Localía
+    </h2>
+    <div class="segmented" id="localiaSelector">
+      <input type="radio" name="localia" id="localiaD1" value="d1" checked>
+      <label for="localiaD1">Dupla 1 Local</label>
+      <input type="radio" name="localia" id="localiaD2" value="d2">
+      <label for="localiaD2">Dupla 2 Local</label>
+    </div>
+  </section>
+
+  <!-- DUPLAS -->
+  <div class="duplas-grid">
+
+    <!-- DUPLA 1 -->
+    <div class="dupla-card" id="dupla1" data-inverted="false">
+      <div class="dupla-header">
+        <h3>
+          <span class="cat-badge" id="d1cat1">Senior</span>
+          <span class="sep">-</span>
+          <span class="cat-badge" id="d1cat2">Master</span>
+          <button type="button" class="btn-invert" id="d1invertBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h13l-3-3M7 7l3 3"/><path d="M17 17H4l3 3M17 17l-3-3"/></svg>
+            Orden
+          </button>
+        </h3>
+        <span class="role-badge" id="d1role">Local</span>
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="d1omit">
+        Omitir Dupla 1
+      </label>
+
+      <div class="dupla-fields" id="d1fields">
+        <div class="mini-rival-block hidden" id="d1rivalBlock">
+          <input type="text" id="d1rivalName" placeholder="Equipo Rival (Dupla 1)" autocomplete="off">
+          <input type="text" id="d1rivalAddr" placeholder="Dirección del rival" autocomplete="off">
+          <input type="url" id="d1rivalMaps" placeholder="Link de Google Maps (opcional)" autocomplete="off">
+        </div>
+
+        <label class="field-label" for="d1fecha">Fecha</label>
+        <input type="date" id="d1fecha">
+
+        <div class="time-row">
+          <label class="time-name" id="d1t1name" for="d1hora1">Senior</label>
+          <input type="time" id="d1hora1" value="21:15" lang="en-GB" step="60">
+        </div>
+        <div class="warn-msg hidden" id="d1warn">⚠️ Fuera del rango recomendado (20:00–22:00 hs)</div>
+
+        <div class="time-row">
+          <label class="time-name" id="d1t2name">Master</label>
+          <span class="time-badge" id="d1hora2disp">22:15 hs</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DUPLA 2 -->
+    <div class="dupla-card visitante" id="dupla2" data-inverted="false">
+      <div class="dupla-header">
+        <h3>
+          <span class="cat-badge" id="d2cat1">Promaster</span>
+          <span class="sep">-</span>
+          <span class="cat-badge" id="d2cat2">Leyenda</span>
+          <button type="button" class="btn-invert" id="d2invertBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h13l-3-3M7 7l3 3"/><path d="M17 17H4l3 3M17 17l-3-3"/></svg>
+            Orden
+          </button>
+        </h3>
+        <span class="role-badge visitante" id="d2role">Visitante</span>
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="d2omit">
+        Omitir Dupla 2
+      </label>
+
+      <div class="dupla-fields" id="d2fields">
+        <div class="mini-rival-block hidden" id="d2rivalBlock">
+          <input type="text" id="d2rivalName" placeholder="Equipo Rival (Dupla 2)" autocomplete="off">
+          <input type="text" id="d2rivalAddr" placeholder="Dirección del rival" autocomplete="off">
+          <input type="url" id="d2rivalMaps" placeholder="Link de Google Maps (opcional)" autocomplete="off">
+        </div>
+
+        <label class="field-label" for="d2fecha">Fecha</label>
+        <input type="date" id="d2fecha">
+
+        <div class="time-row">
+          <label class="time-name" id="d2t1name" for="d2hora1">Promaster</label>
+          <input type="time" id="d2hora1" value="21:15" lang="en-GB" step="60">
+        </div>
+        <div class="warn-msg hidden" id="d2warn">⚠️ Fuera del rango recomendado (20:00–22:00 hs)</div>
+
+        <div class="time-row">
+          <label class="time-name" id="d2t2name">Leyenda</label>
+          <span class="time-badge" id="d2hora2disp">22:15 hs</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PREVIEWS -->
+  <div class="previews-grid">
+    <div class="card preview-card">
+      <h2>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20zm4.4-5.6c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.7.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.3.1-.5.1-.1.2-.3.3-.4.1-.1.1-.2.2-.4.1-.1 0-.3 0-.4 0-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9 0 1.1.8 2.2.9 2.3.1.2 1.6 2.5 3.9 3.4.5.2.9.3 1.3.4.5.2 1 .1 1.4.1.4-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2-.1-.1-.2-.2-.4-.3z"/></svg>
+        Vista Previa WhatsApp
+      </h2>
+      <pre class="preview-box" id="waPreview"></pre>
+      <button type="button" class="btn" id="sendWaBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20zm4.4-5.6c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.2-.7.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.3.1-.5.1-.1.2-.3.3-.4.1-.1.1-.2.2-.4.1-.1 0-.3 0-.4 0-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9 0 1.1.8 2.2.9 2.3.1.2 1.6 2.5 3.9 3.4.5.2.9.3 1.3.4.5.2 1 .1 1.4.1.4-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2-.1-.1-.2-.2-.4-.3z"/></svg>
+        Enviar a WhatsApp
+      </button>
+    </div>
+
+    <div class="card preview-card">
+      <h2>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 6l9 7 9-7"/></svg>
+        Vista Previa Mail Utilería
+      </h2>
+      <pre class="preview-box" id="mailPreview"></pre>
+      <button type="button" class="btn btn-primary" id="sendMailBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 6l9 7 9-7"/></svg>
+        Enviar Mail a Utilería
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<footer class="app-footer">
+  ¡Vamos Racing carajo! · App instalable (PWA) para uso interno del cuerpo técnico.
+</footer>
+
+<script>
+/* ==========================================================================
+   FUTSAL RC — SCRIPT PRINCIPAL
+   NOTA DE ARQUITECTURA (requisito técnico crítico):
+   Todos los inputs de texto/fecha/hora se crean UNA sola vez en el HTML.
+   La función refreshPreviews() y las funciones asociadas SOLO leen `.value`
+   de los inputs y escriben `.textContent` en elementos de solo lectura
+   (badges, spans de vista previa). Jamás se reescribe el innerHTML de un
+   contenedor que posea inputs de texto, por lo que el foco/cursor del
+   usuario nunca se pierde mientras escribe (ej: dirección del rival o
+   links de Maps).
+   ========================================================================== */
+
+(function(){
+  "use strict";
+
+  const $ = (sel) => document.querySelector(sel);
+
+  const CATS = {
+    1: ["Senior", "Master"],
+    2: ["Promaster", "Leyenda"]
+  };
+
+  const DIAS = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+
+  /* ---------------------- Utilidades de fecha / hora ---------------------- */
+
+  function toInputDateValue(d){
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const day = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${day}`;
+  }
+
+  function getNextWeekMonday(base){
+    base = base || new Date();
+    const d = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+    const dow = d.getDay(); // 0=Dom ... 6=Sab
+    const daysSinceMonday = (dow + 6) % 7;
+    const thisMonday = new Date(d);
+    thisMonday.setDate(d.getDate() - daysSinceMonday);
+    const nextMonday = new Date(thisMonday);
+    nextMonday.setDate(thisMonday.getDate() + 7);
+    return nextMonday;
+  }
+
+  function getNextWeekWednesday(base){
+    const nextMonday = getNextWeekMonday(base);
+    const w = new Date(nextMonday);
+    w.setDate(nextMonday.getDate() + 2);
+    return w;
+  }
+
+  function formatDateEs(dateStr){
+    if(!dateStr) return "(sin fecha)";
+    const parts = dateStr.split("-").map(Number);
+    const y = parts[0], m = parts[1], d = parts[2];
+    const dt = new Date(y, m-1, d);
+    const dia = DIAS[dt.getDay()];
+    const dd = String(d).padStart(2,"0");
+    const mm = String(m).padStart(2,"0");
+    return `${dia} ${dd}/${mm}`;
+  }
+
+  function addMinutesToTime(timeStr, minutesToAdd){
+    if(!timeStr) return "--:--";
+    const [hh, mm] = timeStr.split(":").map(Number);
+    let total = hh*60 + mm + minutesToAdd;
+    total = ((total % 1440) + 1440) % 1440;
+    const nh = Math.floor(total/60);
+    const nm = total % 60;
+    return `${String(nh).padStart(2,"0")}:${String(nm).padStart(2,"0")}`;
+  }
+
+  function isTimeOutOfRange(timeStr){
+    if(!timeStr) return false;
+    const [hh, mm] = timeStr.split(":").map(Number);
+    const total = hh*60 + mm;
+    return (total < 20*60) || (total > 22*60);
+  }
+
+  /* ---------------------- Estado de orden de categorías ---------------------- */
+
+  function isInverted(n){
+    return document.getElementById(`dupla${n}`).dataset.inverted === "true";
+  }
+
+  function getCatOrder(n){
+    const cats = CATS[n];
+    return isInverted(n) ? [cats[1], cats[0]] : [cats[0], cats[1]];
+  }
+
+  function updateCatLabels(n){
+    const [first, second] = getCatOrder(n);
+    document.getElementById(`d${n}cat1`).textContent = first;
+    document.getElementById(`d${n}cat2`).textContent = second;
+    document.getElementById(`d${n}t1name`).textContent = first;
+    document.getElementById(`d${n}t2name`).textContent = second;
+  }
+
+  function toggleInvert(n){
+    const card = document.getElementById(`dupla${n}`);
+    card.dataset.inverted = (card.dataset.inverted === "true") ? "false" : "true";
+    updateCatLabels(n);
+    refreshPreviews();
+  }
+
+  /* ---------------------- Localía ---------------------- */
+
+  function getLocalDupla(){
+    const checked = document.querySelector('input[name="localia"]:checked');
+    return checked ? checked.value : "d1"; // "d1" o "d2"
+  }
+
+  function updateRoleBadges(){
+    const local = getLocalDupla();
+    const dupla1 = document.getElementById("dupla1");
+    const d1role = document.getElementById("d1role");
+    const dupla2 = document.getElementById("dupla2");
+    const d2role = document.getElementById("d2role");
+    if(local === "d1"){
+      d1role.textContent = "Local";
+      d1role.classList.remove("visitante");
+      dupla1.classList.remove("visitante");
+      d2role.textContent = "Visitante";
+      d2role.classList.add("visitante");
+      dupla2.classList.add("visitante");
+    } else {
+      d2role.textContent = "Local";
+      d2role.classList.remove("visitante");
+      dupla2.classList.remove("visitante");
+      d1role.textContent = "Visitante";
+      d1role.classList.add("visitante");
+      dupla1.classList.add("visitante");
+    }
+  }
+
+  /* ---------------------- Omitir dupla ---------------------- */
+
+  function handleOmitChange(n){
+    const omit = document.getElementById(`d${n}omit`).checked;
+    const fields = document.getElementById(`d${n}fields`);
+    const card = document.getElementById(`dupla${n}`);
+    fields.classList.toggle("hidden", omit);
+    card.classList.toggle("omitted", omit);
+
+    const radio = document.getElementById(`localiaD${n}`);
+    radio.disabled = omit;
+    if(omit && radio.checked){
+      const otherN = n === 1 ? 2 : 1;
+      const otherRadio = document.getElementById(`localiaD${otherN}`);
+      if(!document.getElementById(`d${otherN}omit`).checked){
+        otherRadio.checked = true;
+      }
+    }
+    updateRoleBadges();
+    refreshPreviews();
+  }
+
+  /* ---------------------- Reprogramado ---------------------- */
+
+  function handleReprogramadoChange(){
+    const active = document.getElementById("reprogramado").checked;
+    document.getElementById("generalRivalBlock").classList.toggle("hidden", active);
+    document.getElementById("d1rivalBlock").classList.toggle("hidden", !active);
+    document.getElementById("d2rivalBlock").classList.toggle("hidden", !active);
+    refreshPreviews();
+  }
+
+  /* ---------------------- Validación de horario ---------------------- */
+
+  function checkHoraWarning(n){
+    const input = document.getElementById(`d${n}hora1`);
+    const warn = document.getElementById(`d${n}warn`);
+    const out = isTimeOutOfRange(input.value);
+    warn.classList.toggle("hidden", !out);
+    input.classList.toggle("input-warning", out);
+  }
+
+  function updateHora2Display(n){
+    const hora1 = document.getElementById(`d${n}hora1`).value;
+    const disp = document.getElementById(`d${n}hora2disp`);
+    disp.textContent = hora1 ? `${addMinutesToTime(hora1, 60)} hs` : "--:--";
+  }
+
+  /* ---------------------- Recolección de datos por dupla ---------------------- */
+
+  function getDuplaInfo(n){
+    const omit = document.getElementById(`d${n}omit`).checked;
+    const [catFirst, catSecond] = getCatOrder(n);
+    const fecha = document.getElementById(`d${n}fecha`).value;
+    const hora1 = document.getElementById(`d${n}hora1`).value || "--:--";
+    const hora2 = addMinutesToTime(document.getElementById(`d${n}hora1`).value, 60);
+    const isLocal = getLocalDupla() === `d${n}`;
+
+    const reprogramado = document.getElementById("reprogramado").checked;
+    let rivalName, rivalAddr, rivalMaps;
+    if(reprogramado){
+      rivalName = document.getElementById(`d${n}rivalName`).value.trim();
+      rivalAddr = document.getElementById(`d${n}rivalAddr`).value.trim();
+      rivalMaps = document.getElementById(`d${n}rivalMaps`).value.trim();
+    } else {
+      rivalName = document.getElementById("rivalGeneral").value.trim();
+      rivalAddr = document.getElementById("rivalAddress").value.trim();
+      rivalMaps = document.getElementById("rivalMapsLink").value.trim();
+    }
+
+    return { n, omit, catFirst, catSecond, fecha, hora1, hora2, isLocal, rivalName, rivalAddr, rivalMaps };
+  }
+
+  /* ---------------------- Construcción de mensajes ---------------------- */
+
+  function buildWhatsAppText(){
+    const d1 = getDuplaInfo(1);
+    const d2 = getDuplaInfo(2);
+    const active = [d1, d2].filter(d => !d.omit);
+    active.sort((a,b) => (b.isLocal === true) - (a.isLocal === true));
+
+    if(active.length === 0){
+      return "Cargá al menos una dupla (sin omitir) para generar el mensaje.";
+    }
+
+    const rivalNames = [...new Set(active.map(d => d.rivalName || "Rival a confirmar"))];
+    const sameRival = rivalNames.length === 1;
+
+    const lines = [];
+
+    if(sameRival){
+      lines.push(`⚽ FECHA DE FUTSAL vs ${rivalNames[0]} ⚽`);
+      lines.push("");
+    }
+
+    active.forEach(d => {
+      if(!sameRival){
+        lines.push(`⚽ FECHA DE FUTSAL vs ${d.rivalName || "Rival a confirmar"} ⚽`);
+      }
+      lines.push(`📅 ${formatDateEs(d.fecha)} - ${d.isLocal ? "Local" : "Visitante"}`);
+      if(d.isLocal){
+        lines.push("📍 Racing Club (Sede Propia)");
+      } else {
+        let sedeLine = `📍 ${d.rivalAddr || "Dirección a confirmar"}`;
+        if(d.rivalMaps){
+          sedeLine += ` 📌 ${d.rivalMaps}`;
+        }
+        lines.push(sedeLine);
+      }
+      lines.push(`▫️ ${d.catFirst}: ${d.hora1} hs`);
+      lines.push(`▫️ ${d.catSecond}: ${d.hora2} hs`);
+      lines.push("");
+    });
+
+    lines.push("⚠️ Puntos a tener en cuenta:");
+    lines.push("• Llegar con 30 minutos de anticipación a la citación.");
+    lines.push("• Confirmar asistencia al entrenador.");
+    lines.push("");
+    lines.push("¡Vamos Racing carajo!");
+
+    return lines.join("\n");
+  }
+
+  function buildMailSubjectBody(){
+    const d1 = getDuplaInfo(1);
+    const d2 = getDuplaInfo(2);
+    const active = [d1, d2].filter(d => !d.omit);
+    active.sort((a,b) => (b.isLocal === true) - (a.isLocal === true));
+
+    if(active.length === 0){
+      return { subject: "Indumentaria Futsal Masculino", body: "Cargá al menos una dupla (sin omitir) para generar el mail." };
+    }
+
+    const rivalNames = [...new Set(active.map(d => d.rivalName || "Rival a confirmar"))];
+    const sameRival = rivalNames.length === 1;
+    const subjectRival = rivalNames.join(" / ");
+    const subject = `Indumentaria Futsal Masculino - vs ${subjectRival}`;
+
+    let body = "Hola Mati.\n";
+    if(sameRival){
+      body += `Te paso la programación de la semana que viene vs ${rivalNames[0]}\n`;
+      active.forEach(d => {
+        body += `${d.catFirst} y ${d.catSecond} - ${formatDateEs(d.fecha)}\n`;
+      });
+    } else {
+      body += "Te paso la programación de la semana que viene:\n";
+      active.forEach(d => {
+        body += `${d.catFirst} y ${d.catSecond} vs ${d.rivalName || "Rival a confirmar"} - ${formatDateEs(d.fecha)}\n`;
+      });
+    }
+    body += "Saludos";
+
+    return { subject, body };
+  }
+
+  /* ---------------------- Refresco de vistas previas ---------------------- */
+
+  function refreshPreviews(){
+    // Sólo textContent sobre elementos de solo-lectura: no afecta foco de inputs.
+    const waText = buildWhatsAppText();
+    document.getElementById("waPreview").textContent = waText;
+
+    const { subject, body } = buildMailSubjectBody();
+    const mailText = `Para: mperone@racingclub.com.ar\nAsunto: ${subject}\nCuerpo:\n${body}`;
+    document.getElementById("mailPreview").textContent = mailText;
+  }
+
+  /* ---------------------- Envío ---------------------- */
+
+  function sendWhatsApp(){
+    const text = buildWhatsAppText();
+    const url = "https://wa.me/?text=" + encodeURIComponent(text);
+    window.open(url, "_blank");
+  }
+
+  function sendMail(){
+    const { subject, body } = buildMailSubjectBody();
+    const url = `mailto:mperone@racingclub.com.ar?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = url;
+  }
+
+  /* ---------------------- Inicialización de eventos ---------------------- */
+
+  function initDefaults(){
+    document.getElementById("d1fecha").value = toInputDateValue(getNextWeekMonday());
+    document.getElementById("d2fecha").value = toInputDateValue(getNextWeekWednesday());
+    updateCatLabels(1);
+    updateCatLabels(2);
+    updateRoleBadges();
+    updateHora2Display(1);
+    updateHora2Display(2);
+    checkHoraWarning(1);
+    checkHoraWarning(2);
+    refreshPreviews();
+  }
+
+  function bindEvents(){
+    // Texto / fecha / links generales -> sólo refrescan previews (textContent)
+    ["rivalGeneral","rivalAddress","rivalMapsLink",
+     "d1rivalName","d1rivalAddr","d1rivalMaps",
+     "d2rivalName","d2rivalAddr","d2rivalMaps",
+     "d1fecha","d2fecha"
+    ].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener("input", refreshPreviews);
+      el.addEventListener("change", refreshPreviews);
+    });
+
+    // Horarios: validan rango, actualizan hora2 y refrescan previews
+    [1,2].forEach(n => {
+      const hora1 = document.getElementById(`d${n}hora1`);
+      hora1.addEventListener("input", () => {
+        checkHoraWarning(n);
+        updateHora2Display(n);
+        refreshPreviews();
+      });
+    });
+
+    // Invertir orden
+    document.getElementById("d1invertBtn").addEventListener("click", () => toggleInvert(1));
+    document.getElementById("d2invertBtn").addEventListener("click", () => toggleInvert(2));
+
+    // Omitir dupla
+    document.getElementById("d1omit").addEventListener("change", () => handleOmitChange(1));
+    document.getElementById("d2omit").addEventListener("change", () => handleOmitChange(2));
+
+    // Reprogramado
+    document.getElementById("reprogramado").addEventListener("change", handleReprogramadoChange);
+
+    // Localía
+    document.getElementById("localiaD1").addEventListener("change", () => { updateRoleBadges(); refreshPreviews(); });
+    document.getElementById("localiaD2").addEventListener("change", () => { updateRoleBadges(); refreshPreviews(); });
+
+    // Envío
+    document.getElementById("sendWaBtn").addEventListener("click", sendWhatsApp);
+    document.getElementById("sendMailBtn").addEventListener("click", sendMail);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    bindEvents();
+    initDefaults();
+  });
+
+  /* ==========================================================================
+     PWA — Manifest embebido (Blob URL) + Service Worker (Blob URL) + botón
+     de instalación dinámico.
+     ========================================================================== */
+
+  function generateIconDataUrl(size){
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "#002244";
+    ctx.beginPath();
+    ctx.arc(size/2, size/2, size/2, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle = "#0098DA";
+    ctx.lineWidth = size * 0.06;
+    ctx.beginPath();
+    ctx.arc(size/2, size/2, size/2 - ctx.lineWidth, 0, Math.PI*2);
+    ctx.stroke();
+
+    ctx.fillStyle = "#FFFFFF";
+    ctx.font = `bold ${Math.round(size*0.38)}px Arial`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("RC", size/2, size/2 + size*0.02);
+
+    return canvas.toDataURL("image/png");
+  }
+
+  function setupPwaManifest(){
+    try{
+      const icon192 = generateIconDataUrl(192);
+      const icon512 = generateIconDataUrl(512);
+
+      const manifest = {
+        name: "Futsal Racing Club - Programación Semanal",
+        short_name: "Futsal RC",
+        start_url: ".",
+        scope: ".",
+        display: "standalone",
+        background_color: "#F4F6F8",
+        theme_color: "#002244",
+        icons: [
+          { src: icon192, sizes: "192x192", type: "image/png" },
+          { src: icon512, sizes: "512x512", type: "image/png" }
+        ]
+      };
+
+      const manifestBlob = new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" });
+      const manifestUrl = URL.createObjectURL(manifestBlob);
+      document.getElementById("manifestLink").setAttribute("href", manifestUrl);
+      document.getElementById("faviconLink").setAttribute("href", icon192);
+      document.getElementById("appleIconLink").setAttribute("href", icon512);
+    } catch(err){
+      console.warn("No se pudo generar el manifest/íconos PWA:", err);
+    }
+  }
+
+  function setupServiceWorker(){
+    if(!("serviceWorker" in navigator)) return;
+    const swCode = [
+      "const CACHE_NAME = 'futsal-rc-cache-v1';",
+      "self.addEventListener('install', function(e){",
+      "  self.skipWaiting();",
+      "  e.waitUntil(",
+      "    caches.open(CACHE_NAME).then(function(cache){",
+      "      return cache.add(self.location.origin + self.location.pathname.replace(/[^/]+$/, '')).catch(function(){});",
+      "    })",
+      "  );",
+      "});",
+      "self.addEventListener('activate', function(e){ e.waitUntil(self.clients.claim()); });",
+      "self.addEventListener('fetch', function(e){",
+      "  e.respondWith(",
+      "    caches.match(e.request).then(function(cached){",
+      "      return cached || fetch(e.request).then(function(resp){",
+      "        return caches.open(CACHE_NAME).then(function(cache){",
+      "          try{ cache.put(e.request, resp.clone()); }catch(err){}",
+      "          return resp;",
+      "        });",
+      "      }).catch(function(){ return cached; });",
+      "    })",
+      "  );",
+      "});"
+    ].join("\n");
+
+    const swBlob = new Blob([swCode], { type: "application/javascript" });
+    const swUrl = URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swUrl).catch(function(err){
+      console.warn("Registro de Service Worker falló (normal en file:// o entornos sin HTTPS):", err);
+    });
+  }
+
+  function setupInstallButton(){
+    const installBtn = document.getElementById("installBtn");
+    let deferredPrompt = null;
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.classList.remove("hidden");
+    });
+
+    installBtn.addEventListener("click", async () => {
+      if(!deferredPrompt) return;
+      installBtn.classList.add("hidden");
+      deferredPrompt.prompt();
+      try{ await deferredPrompt.userChoice; } catch(err){}
+      deferredPrompt = null;
+    });
+
+    window.addEventListener("appinstalled", () => {
+      installBtn.classList.add("hidden");
+      deferredPrompt = null;
+    });
+  }
+
+  setupPwaManifest();
+  setupServiceWorker();
+  setupInstallButton();
+
+})();
+</script>
+</body>
+</html>
